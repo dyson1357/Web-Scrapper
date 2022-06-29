@@ -44,3 +44,5 @@ for image in images:
         pass
 
 driver.close()
+
+#지금 저장이 안 되는 상태
