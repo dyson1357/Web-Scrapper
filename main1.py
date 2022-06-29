@@ -1,3 +1,4 @@
+#멜론 차트 100 긁어오기
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import time
