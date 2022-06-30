@@ -16,6 +16,14 @@ def open_driver():
     return driver
 
 
+#  페이지 넘김
+def next_page(driver):
+    #  총 페이지 수 도출
+    page_path = driver.find_element(By.XPATH, "/html/body/div[2]/div[3]/div[3]/div[2]/div[9]/div[2]/div[2]/div[5]/div/span")
+    total_page = page_path.text
+    print(total_page)
+
+
 #  검색 및 출력
 def search_prod(driver):
     #  검색어 입력
@@ -60,7 +68,7 @@ def save_file(filename, inventory):
 driver = open_driver()
 pList = search_prod(driver)
 save_file('prod.csv', pList)
-
+next_page(driver)
 '''
 1. 한 페이지 상품 리스트 파싱 완료, 
 '''
@@ -70,8 +78,14 @@ save_file('prod.csv', pList)
 1. 다나와 검색 페이지 접속 - 0
 2. 검색어 입력 - 0
 3. 검색 - 0
-4. 스크롤 제일 아래로 내리고, 다 내리면 다음 페이지
-5. 페이지 끝까지 읽음
-6. 각 제품별 이름, 가격, 사진 수집 - 0
-7. 해당 내용을 파일로 저장 - 0
+4. 총 페이지 수 파악
+5. for문 처리 해서 각 페이지 돌면서
+    5.1. 상품 목록 읽고 이름, 가격, 이미지 긁어옴
+    5.2. 긁어온 데이터 저장
+6. 종료
+'''
+
+'''
+검색어 1. 노트북
+검색어 2. LG전자 휘센 DQ
 '''
