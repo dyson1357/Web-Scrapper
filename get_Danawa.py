@@ -21,18 +21,20 @@ element.send_keys(search_txt)
 #  검색 버튼 눌러 검색 수행
 driver.find_element(By.CLASS_NAME, "search__submit").click()
 
-#
+#  BS4 사용 전 초기화
 soup = BeautifulSoup(driver.page_source, 'html.parser')
 
-goods_list = soup.select('div.main_prodlist.main_prodlist_list > ul > li')
+#  상품 리스트 파싱
+product_list = soup.select('div.main_prodlist.main_prodlist_list > ul > li')
 
-for v in goods_list:
-    if v.find('div', class_='prod_main_info'):
-        name = v.select_one('p.prod_name > a').text.strip()
-        price = v.select_one('p.price_sect > a').text.strip()
-        img_link = v.select_one('div.thumb_image > a > img').get('data-original')
+#  현재 페이지에 노출된 상품들의 제품명, 가격, 이미지 링크를 인기 상품 순서로 출력
+for i in product_list:
+    if i.find('div', class_='prod_main_info'):
+        name = i.select_one('p.prod_name > a').text.strip()
+        price = i.select_one('p.price_sect > a').text.strip()
+        img_link = i.select_one('div.thumb_image > a > img').get('data-original')
         if img_link == None:
-            img_link = v.select_one('div.thumb_image > a > img').get('src')
+            img_link = i.select_one('div.thumb_image > a > img').get('src')
         print(name, price, img_link)
     print()
 
