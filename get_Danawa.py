@@ -23,14 +23,13 @@ def next_page(driver):
     page_path = driver.find_element(By.XPATH, "/html/body/div[2]/div[3]/div[3]/div[2]/div[9]/div[2]/div[2]/div[5]/div/span")
     total_page_text = page_path.text
     total_page = int(re.sub(r'\D', '', total_page_text))
-    print(type(total_page))
+    print(total_page)
 
 
 #  검색 및 출력
 def search_prod(driver):
     #  검색어 입력
     #  셀레니움 업데이트로 find_elements_by_* 구문 사용 대신 find_elements() 구문을 사용
-    search_txt = input('검색 키워드: ')
     driver.find_element(By.ID, "AKCSearch").click()
     element = driver.find_element(By.ID, "AKCSearch")
     element.send_keys(search_txt)
@@ -67,9 +66,10 @@ def save_file(filename, inventory):
     print("저장 완료")
 
 
+search_txt = input('검색 키워드: ')
 driver = open_driver()
 pList = search_prod(driver)
-save_file('prod.csv', pList)
+save_file(str(search_txt) + '.csv', pList)
 next_page(driver)
 
 '''
