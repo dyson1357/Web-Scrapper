@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import time
 import csv
+import re
 
 
 #  다나와 메인 페이지 오픈
@@ -20,8 +21,9 @@ def open_driver():
 def next_page(driver):
     #  총 페이지 수 도출
     page_path = driver.find_element(By.XPATH, "/html/body/div[2]/div[3]/div[3]/div[2]/div[9]/div[2]/div[2]/div[5]/div/span")
-    total_page = page_path.text
-    print(total_page)
+    total_page_text = page_path.text
+    total_page = int(re.sub(r'\D', '', total_page_text))
+    print(type(total_page))
 
 
 #  검색 및 출력
