@@ -71,9 +71,6 @@ driver = open_driver()
 pList = search_prod(driver)
 save_file('prod.csv', pList)
 next_page(driver)
-'''
-1. 한 페이지 상품 리스트 파싱 완료, 
-'''
 
 '''
 해야 할 것
