@@ -4,9 +4,9 @@ from selenium.webdriver.common.keys import Keys
 import time
 import urllib.request
 
-driver = webdriver.Chrome('C:/chrome/chromedriver.exe')  # 여기에 크롬드라이브 다운로드 받은 경로를 입력한다.
+driver = webdriver.Chrome('C:/chrome/chromedriver.exe')
 driver.get("https://www.google.co.kr/imghp?hl=ko&ogbl")
-elem = driver.find_element_by_name("q")
+elem = driver.find_element_by_id("q")
 elem.send_keys("한수환 총장")
 #엔터를 침
 elem.send_keys(Keys.RETURN)
@@ -29,7 +29,7 @@ while True:
             break
     last_height = new_height
 
-images = driver.find_elements_by_css_selector(".rg_i.Q4LuWd") #여러개의 이미지 선택하기, 클래스 이름 기준
+images = driver.find_elements_by_css_selector(".rg_i.Q4LuWd")
 count = 1
 for image in images:
     try:
@@ -45,4 +45,3 @@ for image in images:
 
 driver.close()
 
-#지금 저장이 안 되는 상태
