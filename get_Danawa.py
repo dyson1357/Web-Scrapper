@@ -40,9 +40,9 @@ def search_prod(driver):
 
     #  BS4 사용 전 초기화
     soup = BeautifulSoup(driver.page_source, 'html.parser')
-
     #  상품 리스트 파싱
     product_list = soup.select('div.main_prodlist.main_prodlist_list > ul > li')
+
     pList = []
 
     #  현재 페이지에 노출된 상품들의 제품명, 가격, 이미지 링크를 인기 상품 순서로 출력
