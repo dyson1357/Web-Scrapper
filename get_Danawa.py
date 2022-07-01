@@ -34,6 +34,7 @@ print(total_page)
 
 curPage = 1
 print_page = 0
+dec_page = 1
 
 #  전체 페이지 순회
 while curPage <= total_page:
@@ -43,6 +44,7 @@ while curPage <= total_page:
     product_list = soup.select('div.main_prodlist.main_prodlist_list > ul > li')
 
     pList = []
+    element = driver.find_element(By.ID, "AKCSearch")
 
     #  현재 페이지에 노출된 상품들의 제품명, 가격, 이미지 링크를 인기 상품 순서로 출력
     for i in product_list:
@@ -56,17 +58,18 @@ while curPage <= total_page:
             print(name, price, img_link)
         print()
     curPage += 1
+    dec_page += 1
 
     #  페이지 넘기는 작업 수행
     #  nth-child(N) -> 부모 안에 모든 요소 중 N번째 요소 https://lalacode.tistory.com/6 참고
-    cur_css = 'div.paging_number_wrap > a:nth-child({})'.format(curPage)
+    cur_css = 'div.paging_number_wrap > a:nth-child({})'.format(dec_page)
 
-    if (curPage - 1) % 10 == 0:
+    if (dec_page - 1) % 10 == 0:
         print("if에 잡혀있음")
         WebDriverWait(driver, 3).until(EC.presence_of_element_located(
             (By.CLASS_NAME, 'paging_edge_nav.paging_nav_next.click_log_page'))).click()
         del soup
-        curPage = 1
+        dec_page = 1
         print_page += 10
         time.sleep(3)
 
@@ -76,7 +79,7 @@ while curPage <= total_page:
         del soup
         time.sleep(3)
 
-    print(print_page + curPage)
+    print(curPage)
 
     #  페이지 순회 완료 되면 수행
     if curPage > total_page:
