@@ -26,14 +26,14 @@ element.send_keys(search_txt)
 #  검색 버튼 눌러 검색 수행
 driver.find_element(By.CLASS_NAME, "search__submit").click()
 
-
 #  총 페이지 수 도출
-page_path = driver.find_element(By.XPATH, "/html/body/div[2]/div[3]/div[3]/div[2]/div[9]/div[2]/div[2]/div[5]/div/span")
+page_path = driver.find_element(By.XPATH, '//*[@id="paginationArea"]/div/span')
 total_page_text = page_path.text
 total_page = int(re.sub(r'\D', '', total_page_text))
 print(total_page)
 
 curPage = 1
+print_page = 0
 
 #  전체 페이지 순회
 while curPage <= total_page:
@@ -57,31 +57,35 @@ while curPage <= total_page:
         print()
     curPage += 1
 
+    #  페이지 넘기는 작업 수행
+    #  nth-child(N) -> 부모 안에 모든 요소 중 N번째 요소 https://lalacode.tistory.com/6 참고
+    cur_css = 'div.paging_number_wrap > a:nth-child({})'.format(curPage)
+
+    if (curPage - 1) % 10 == 0:
+        print("if에 잡혀있음")
+        WebDriverWait(driver, 3).until(EC.presence_of_element_located(
+            (By.CLASS_NAME, 'paging_edge_nav.paging_nav_next.click_log_page'))).click()
+        del soup
+        curPage = 1
+        print_page += 10
+        time.sleep(3)
+
+    else:
+        print("else로 빠졌음")
+        WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, cur_css))).click()
+        del soup
+        time.sleep(3)
+
+    print(print_page + curPage)
+
     #  페이지 순회 완료 되면 수행
     if curPage > total_page:
         print('Crawling succeed')
         break
 
-    #  페이지 넘기는 작업 수행
-    cur_css = 'div.paging_number_wrap > a:nth-child({})'.format(curPage)
-    WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, cur_css))).click()
-    del soup
-    time.sleep(3)
-    print(curPage)
-
-'''
-해야 할 것
-1. 다나와 검색 페이지 접속 - 0
-2. 검색어 입력 - 0
-3. 검색 - 0
-4. 총 페이지 수 파악
-5. 각 페이지 돌면서
-    5.1. 상품 목록 읽고 이름, 가격, 이미지 긁어옴
-    5.2. 긁어온 데이터 저장
-6. 종료
-'''
-
 '''
 검색어 1. 노트북
 검색어 2. LG전자 휘센 DQ
+검색어 3. 다나와
+검색어 4. 리슬링
 '''
