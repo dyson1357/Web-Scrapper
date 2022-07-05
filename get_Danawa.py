@@ -35,6 +35,7 @@ print(total_page)
 curPage = 1
 print_page = 0
 dec_page = 1
+pList = []
 
 #  전체 페이지 순회
 while curPage <= total_page:
@@ -43,7 +44,6 @@ while curPage <= total_page:
     #  상품 리스트 파싱
     product_list = soup.select('div.main_prodlist.main_prodlist_list > ul > li')
 
-    pList = []
     element = driver.find_element(By.ID, "AKCSearch")
 
     #  현재 페이지에 노출된 상품들의 제품명, 가격, 이미지 링크를 인기 상품 순서로 출력
@@ -87,6 +87,13 @@ while curPage <= total_page:
 
         print(curPage)
 
+def saveToFile(filename, list):
+    with open(filename, 'w', encoding='utf-8-sig', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows(list)
+    print(search_txt + '.csv 파일 저장 완료')
+
+saveToFile(search_txt+'.csv', pList)
 
 '''
 검색어 1. 노트북
