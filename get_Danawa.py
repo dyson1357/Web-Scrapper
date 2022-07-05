@@ -60,31 +60,31 @@ while curPage <= total_page:
     curPage += 1
     dec_page += 1
 
-    #  페이지 넘기는 작업 수행
-    #  nth-child(N) -> 부모 안에 모든 요소 중 N번째 요소 https://lalacode.tistory.com/6 참고
-    cur_css = 'div.paging_number_wrap > a:nth-child({})'.format(dec_page)
-
-    if (dec_page - 1) % 10 == 0:
-        print("if에 잡혀있음")
-        WebDriverWait(driver, 3).until(EC.presence_of_element_located(
-            (By.CLASS_NAME, 'paging_edge_nav.paging_nav_next.click_log_page'))).click()
-        del soup
-        dec_page = 1
-        print_page += 10
-        time.sleep(3)
-
-    else:
-        print("else로 빠졌음")
-        WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, cur_css))).click()
-        del soup
-        time.sleep(3)
-
-    print(curPage)
-
-    #  페이지 순회 완료 되면 수행
     if curPage > total_page:
         print('Crawling succeed')
         break
+    else:
+        #  페이지 넘기는 작업 수행
+        #  nth-child(N) -> 부모 안에 모든 요소 중 N번째 요소 https://lalacode.tistory.com/6 참고
+        cur_css = 'div.paging_number_wrap > a:nth-child({})'.format(dec_page)
+
+        if (dec_page - 1) % 10 == 0:
+            print("if에 잡혀있음")
+            WebDriverWait(driver, 3).until(EC.presence_of_element_located(
+                (By.CLASS_NAME, 'paging_edge_nav.paging_nav_next.click_log_page'))).click()
+            del soup
+            dec_page = 1
+            print_page += 10
+            time.sleep(3)
+
+        else:
+            print("else로 빠졌음")
+            WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, cur_css))).click()
+            del soup
+            time.sleep(3)
+
+        print(curPage)
+
 
 '''
 검색어 1. 노트북
