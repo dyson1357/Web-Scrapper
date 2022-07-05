@@ -8,14 +8,12 @@ import time
 import csv
 import re
 
-
 #  다나와 메인 페이지 오픈
 #  chromedriver 설정, 4.0부터는 아래와 같이 써야 함
 service = Service('C:/chrome/chromedriver.exe')
 driver = webdriver.Chrome(service=service)
 driver.get("https://www.danawa.com/")
 time.sleep(2)
-
 
 #  검색어 입력
 search_txt = input('검색 키워드: ')
@@ -87,13 +85,15 @@ while curPage <= total_page:
 
         print(curPage)
 
+
 def saveToFile(filename, list):
     with open(filename, 'w', encoding='utf-8-sig', newline='') as f:
         writer = csv.writer(f)
         writer.writerows(list)
     print(search_txt + '.csv 파일 저장 완료')
 
-saveToFile(search_txt+'.csv', pList)
+
+saveToFile(search_txt + '.csv', pList)
 
 '''
 검색어 1. 노트북

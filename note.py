@@ -54,9 +54,17 @@ while curPage <= total_page:
             img_link = i.select_one('div.thumb_image > a > img').get('data-original')
             if img_link == None:
                 img_link = i.select_one('div.thumb_image > a > img').get('src')
-            pList.append([name, price, img_link])
-            print(name, price, img_link)
+            #  상품 상세 페이지 접속
+            driver.find_element(By.CLASS_NAME, "click_log_product_standard_title_").click()
+            detail_img_link = driver.find_element(By.XPATH, '//*[@id="partContents_52_1"]/p/img').get('data-original')
+            if detail_img_link == None:
+                detail_img_link = driver.find_element(By.XPATH, '//*[@id="partContents_52_1"]/p/img').get('src')
+            pList.append([name, price, img_link, detail_img_link])
+            print(name, price, img_link, detail_img_link)
         print()
+
+
+
     curPage += 1
     dec_page += 1
 
