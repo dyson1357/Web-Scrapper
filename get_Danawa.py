@@ -69,7 +69,6 @@ while curPage <= total_page:
         cur_css = 'div.paging_number_wrap > a:nth-child({})'.format(dec_page)
 
         if (dec_page - 1) % 10 == 0:
-            print("if에 잡혀있음")
             WebDriverWait(driver, 3).until(EC.presence_of_element_located(
                 (By.CLASS_NAME, 'paging_edge_nav.paging_nav_next.click_log_page'))).click()
             del soup
@@ -78,7 +77,6 @@ while curPage <= total_page:
             time.sleep(3)
 
         else:
-            print("else로 빠졌음")
             WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, cur_css))).click()
             del soup
             time.sleep(3)
