@@ -50,7 +50,7 @@ while curPage <= total_page:
     for i in product_list:
         if i.find('div', class_='prod_main_info'):
             name = i.select_one('p.prod_name > a').text.strip()
-            price = i.select_one('p.price_sect > a').text.strip()
+            price = getattr(i.select_one('p.price_sect > a'), 'text', None)
             img_link = i.select_one('div.thumb_image > a > img').get('data-original')
             if img_link == None:
                 img_link = i.select_one('div.thumb_image > a > img').get('src')
