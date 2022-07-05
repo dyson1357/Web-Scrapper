@@ -51,6 +51,8 @@ while curPage <= total_page:
         if i.find('div', class_='prod_main_info'):
             name = i.select_one('p.prod_name > a').text.strip()
             price = getattr(i.select_one('p.price_sect > a'), 'text', None)
+            if price == None:
+                price = i.select_one('p.price_sect').text.strip()
             img_link = i.select_one('div.thumb_image > a > img').get('data-original')
             if img_link == None:
                 img_link = i.select_one('div.thumb_image > a > img').get('src')
@@ -61,7 +63,7 @@ while curPage <= total_page:
     dec_page += 1
 
     if curPage > total_page:
-        print('Crawling succeed')
+        print('크롤링 완료')
         break
     else:
         #  페이지 넘기는 작업 수행
