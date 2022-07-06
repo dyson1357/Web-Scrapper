@@ -7,6 +7,8 @@ from bs4 import BeautifulSoup
 import time
 import csv
 import re
+import signal
+import sys
 
 #  다나와 메인 페이지 오픈
 #  chromedriver 설정, 4.0부터는 아래와 같이 써야 함
@@ -50,12 +52,15 @@ while curPage <= total_page:
             name = i.select_one('p.prod_name > a').text.strip()
             price = getattr(i.select_one('p.price_sect > a'), 'text', None)
             if price == None:
-                price = i.select_one('p.price_sect').text.strip()
+                price = getattr(i.select_one('p.price_sect'), 'text', None)
+            if price == None:
+                price = i.select_one('div.top5_price').text.strip()
             img_link = i.select_one('div.thumb_image > a > img').get('data-original')
             if img_link == None:
                 img_link = i.select_one('div.thumb_image > a > img').get('src')
-            pList.append([name, price, img_link])
-            print(name, price, img_link)
+            if img_link != '//img.danawa.com/new/noData/img/noImg_160.gif':
+                pList.append([name, price, img_link])
+                print(name, price, img_link)
         print()
     curPage += 1
     dec_page += 1
@@ -84,6 +89,7 @@ while curPage <= total_page:
         print(curPage)
 
 
+#  크롤링 결과를 '검색어.csv' 파일로 저장
 def saveToFile(filename, list):
     with open(filename, 'w', encoding='utf-8-sig', newline='') as f:
         writer = csv.writer(f)
@@ -93,9 +99,18 @@ def saveToFile(filename, list):
 
 saveToFile(search_txt + '.csv', pList)
 
+driver.quit()
+
+'''
+광고 데이터가 쓸모 없게 가져와지는 문제
+1. 가격에 쉼표 존재하지 않음
+2. 이미지가 no img -> 실제 상품은 no img 불러오는 src가 없음
+'''
+
 '''
 검색어 1. 노트북
 검색어 2. LG전자 휘센 DQ
 검색어 3. 다나와
 검색어 4. 리슬링
+검색어 5. 우산
 '''
