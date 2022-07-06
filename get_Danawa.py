@@ -19,7 +19,7 @@ driver.get("https://www.danawa.com/")
 time.sleep(2)
 
 #  검색어 입력
-search_txt = input('검색 키워드: ')
+search_txt = input('다나와 검색 키워드: ')
 driver.find_element(By.ID, "AKCSearch").click()
 element = driver.find_element(By.ID, "AKCSearch")
 element.send_keys(search_txt)
