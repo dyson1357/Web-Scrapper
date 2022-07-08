@@ -8,8 +8,7 @@ from bs4 import BeautifulSoup
 import time
 import csv
 import re
-import signal
-import sys
+
 
 #  다나와 메인 페이지 오픈
 #  chromedriver 설정, 4.0부터는 아래와 같이 써야 함
@@ -49,20 +48,24 @@ while curPage <= total_page:
     for i in product_list:
         if i.find('div', class_='prod_main_info'):
             #  상품명
-            name = i.select_one('p.prod_name > a').text.strip()
+            name = i.select_one('p.prod_name > a').text
+            name = re.sub(r"^\s+|\s+$", "", name)
 
             #  다양한 가격 id 및 위치들 처리, 해당 주소에 이미지 없으면 None 처리 하고 뒤에 다른 형식에 위치 했는지 파악해 찾아감
             price = getattr(i.select_one('p.price_sect > a'), 'text', None)
             if price == None:
                 price = getattr(i.select_one('p.price_sect'), 'text', None)
             if price == None:
-                price = i.select_one('div.top5_price').text.strip()
+                price = getattr(i.select_one('div.top5_price'), 'text', None)
+               #  price = i.select_one('div.top5_price').text.strip()
+            price = re.sub(r"^\s+|\s+$", "", price)
             img_link = i.select_one('div.thumb_image > a > img').get('data-original')
             if img_link == None:
                 img_link = i.select_one('div.thumb_image > a > img').get('src')
+            img_link = re.sub(r"^\s+|\s+$", "", img_link)
 
             #  광고 데이터 거르는 작업 - 이미지 src가 다음과 같으면 광고 데이터임을 확인
-            if img_link != '//img.danawa.com/new/noData/img/noImg_160.gif':
+            if "," in price or img_link != '//img.danawa.com/new/noData/img/noImg_160.gif':
                 pList.append([name, price, img_link])
                 print(name, price, img_link)
         print()
@@ -93,7 +96,6 @@ while curPage <= total_page:
 
         #  긁어올 현재 페이지 number 출력
         print(curPage)
-
 
 #  크롤링 결과를 '검색어.csv' 파일로 저장
 def saveToFile(filename, list):
