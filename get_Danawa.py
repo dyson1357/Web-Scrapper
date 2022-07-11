@@ -37,6 +37,7 @@ print_page = 0
 dec_page = 1
 pList = []
 
+
 #  전체 페이지 순회
 while curPage <= total_page:
     #  BS4 사용 전 초기화
@@ -57,12 +58,12 @@ while curPage <= total_page:
                 price = getattr(i.select_one('p.price_sect'), 'text', None)
             if price == None:
                 price = getattr(i.select_one('div.top5_price'), 'text', None)
-               #  price = i.select_one('div.top5_price').text.strip()
             price = re.sub(r"^\s+|\s+$", "", price)
             img_link = i.select_one('div.thumb_image > a > img').get('data-original')
             if img_link == None:
                 img_link = i.select_one('div.thumb_image > a > img').get('src')
             img_link = re.sub(r"^\s+|\s+$", "", img_link)
+
 
             #  광고 데이터 거르는 작업 - 이미지 src가 다음과 같으면 광고 데이터임을 확인
             if "," in price or img_link != '//img.danawa.com/new/noData/img/noImg_160.gif':
