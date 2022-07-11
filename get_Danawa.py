@@ -108,7 +108,7 @@ def saveToFile(filename, list):
 
 saveToFile(search_txt + '.csv', pList)
 
-#  이거 없으면 타임아웃 에러 나던데,,
+#  이거 없으면 타임 아웃 에러 나던데,,
 driver.quit()
 
 '''
@@ -122,10 +122,13 @@ driver.quit()
 검색어 2. LG전자 휘센 DQ
 검색어 3. 다나와
 검색어 4. 리슬링
-검색어 5. 우산
+검색어 5. 장우산
 '''
 
 '''
 1. 한계점
-2. 
+'''
+
+'''
+키보드 인터럽트 처리하기~
 '''
