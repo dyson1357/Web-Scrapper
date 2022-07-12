@@ -5,10 +5,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
+import pymysql
 import time
 import csv
 import re
-
 
 #  다나와 메인 페이지 오픈
 #  chromedriver 설정, 4.0부터는 아래와 같이 써야 함
@@ -37,6 +37,12 @@ print_page = 0
 dec_page = 1
 pList = []
 
+#  DB 연동 및 커서 생성
+conn = pymysql.connect(host='127.0.0.1', user='root', password='151106', db='Scraping', charset='utf8')
+cur = conn.cursor()
+
+#  DB 테이블 생성용, 테스트 완료 후 삭제할 코드
+cur.execute("CREATE TABLE Danawa(name char(50), price char(10), img char(100))")
 
 #  전체 페이지 순회
 while curPage <= total_page:
@@ -64,9 +70,9 @@ while curPage <= total_page:
                 img_link = i.select_one('div.thumb_image > a > img').get('src')
             img_link = re.sub(r"^\s+|\s+$", "", img_link)
 
-
             #  광고 데이터 거르는 작업 - 이미지 src가 다음과 같으면 광고 데이터임을 확인
-            if "," in price or img_link != '//img.danawa.com/new/noData/img/noImg_160.gif':
+            if "," in price or img_link != '' \
+                                           '':
                 pList.append([name, price, img_link])
                 print(name, price, img_link)
         print()
@@ -91,22 +97,24 @@ while curPage <= total_page:
             print_page += 10
             time.sleep(3)
         else:
-            WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, cur_css))).send_keys(Keys.ENTER)
+            WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, cur_css))).send_keys(
+                Keys.ENTER)
             del soup
             time.sleep(3)
 
         #  긁어올 현재 페이지 number 출력
         print(curPage)
 
+
 #  크롤링 결과를 '검색어.csv' 파일로 저장
-def saveToFile(filename, list):
+def saveToDB(filename, list):
     with open(filename, 'w', encoding='utf-8-sig', newline='') as f:
         writer = csv.writer(f)
         writer.writerows(list)
     print(search_txt + '.csv 파일 저장 완료')
 
 
-saveToFile(search_txt + '.csv', pList)
+saveToDB(search_txt + '.csv', pList)
 
 #  이거 없으면 타임 아웃 에러 나던데,,
 driver.quit()
@@ -114,14 +122,14 @@ driver.quit()
 '''
 광고 데이터가 쓸모 없게 가져와지는 문제
 1. 가격에 쉼표 존재하지 않음
-2. 이미지가 no img -> 실제 상품은 no img 불러오는 src가 없음
+2. 이미지가 no img -> 실제 상품은 no img 불러오는 src 없음
 '''
 
 '''
 검색어 1. 노트북
 검색어 2. LG전자 휘센 DQ
 검색어 3. 다나와
-검색어 4. 리슬링
+검색어 4. 리슬링: 4246
 검색어 5. 장우산
 '''
 
@@ -131,4 +139,11 @@ driver.quit()
 
 '''
 키보드 인터럽트 처리하기~
+'''
+
+'''
+1. 네이버
+2. 쿠팡
+3. g마켓
+4. 
 '''
