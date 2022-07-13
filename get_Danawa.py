@@ -41,9 +41,6 @@ pList = []
 conn = pymysql.connect(host='127.0.0.1', user='root', password='151106', db='Scraping', charset='utf8')
 cur = conn.cursor()
 
-#  DB 테이블 생성용, 테스트 완료 후 삭제할 코드
-cur.execute("CREATE TABLE Danawa(name char(50), price char(10), img char(100))")
-
 #  전체 페이지 순회
 while curPage <= total_page:
     #  BS4 사용 전 초기화
@@ -58,15 +55,15 @@ while curPage <= total_page:
             name = i.select_one('p.prod_name > a').text
             name = re.sub(r"^\s+|\s+$", "", name)
 
-            #  다양한 가격 id 및 위치들 처리, 해당 주소에 이미지 없으면 None 처리 하고 뒤에 다른 형식에 위치 했는지 파악해 찾아감
+            #  다양한 가격 id 및 위치들 처리, 해당 위치에 가격 없으면 None 처리 하고 뒤에 다른 형식에 위치 했는지 파악해 찾아감
             price = getattr(i.select_one('p.price_sect > a'), 'text', None)
-            if price == None:
+            if price is None:
                 price = getattr(i.select_one('p.price_sect'), 'text', None)
-            if price == None:
+            if price is None:
                 price = getattr(i.select_one('div.top5_price'), 'text', None)
             price = re.sub(r"^\s+|\s+$", "", price)
             img_link = i.select_one('div.thumb_image > a > img').get('data-original')
-            if img_link == None:
+            if img_link is None:
                 img_link = i.select_one('div.thumb_image > a > img').get('src')
             img_link = re.sub(r"^\s+|\s+$", "", img_link)
 
