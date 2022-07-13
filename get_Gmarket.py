@@ -21,7 +21,7 @@ time.sleep(2)
 
 
 total_item = driver.find_element(By.CLASS_NAME, 'text__item-count').text
-print(search_txt + "의 전체 상품 수: " + total_item)
+print(search_txt + "전체 상품 수: " + total_item)
 
 #  총 페이지 수 도출
 page_path = driver.find_element(By.XPATH, '//*[@id="paginationArea"]/div/span')
