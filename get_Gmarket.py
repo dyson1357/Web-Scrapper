@@ -2,10 +2,9 @@ from selenium import webdriver
 from selenium.webdriver import Keys
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import pymysql
+import csv
 import time
 import re
 
@@ -29,7 +28,6 @@ total_item = driver.find_element(By.CLASS_NAME, 'text__item-count').text
 total_item = int(re.sub(r'\D', '', total_item))
 print("*" + search_txt + "*" + " 전체 상품 수: " + str(total_item))
 
-
 item_count = 1
 page = 1
 pList = []
@@ -49,17 +47,23 @@ while item_count <= total_item:
             name = re.sub(r"^\s+|\s+$", "", name)
 
             #  가격(현재 판매 중인 가격)
-            price = i.select_one('div.box__information-major > div.box__item-price > div.box__price-seller > strong').text
+            price = i.select_one(
+                'div.box__information-major > div.box__item-price > div.box__price-seller > strong').text
             price = re.sub(r"^\s+|\s+$", "", price)
+
+            # div.box__information-major > div.box__item-title > span > a > span.box__brand > span.text__brand
 
             #  상품 브랜드, 브랜드가 적혀있지 않을 경우에는 판매자 정보
             brand = getattr(i.select_one('span.box__brand > span.text__brand'), 'text', None)
             if brand is None:
-                brand = i.select_one('div.box__information_seller > a > span.text__seller').text
+                brand = getattr(i.select_one('div.box__information_seller > a > span.text__seller'), 'text', None)
+            if brand is None:
+                brand = "지마켓"
             brand = re.sub(r"^\s+|\s+$", "", brand)
 
             print(item_count)
-            print(name, price, brand)
+            pList.append([name, price, brand])
+            print("상품명: " + name + "/ 가격: " + price + "/ 브랜드(판매자): " + brand)
             item_count += 1
         print()
 
@@ -67,14 +71,25 @@ while item_count <= total_item:
         print('크롤링 완료')
         break
     else:
-        next_btn = getattr(i.select_one('#section__inner-content-body-container > div:nth-child(3) > div > a.link__page-next'), 'text', None)
+        next_btn = driver.find_element(By.CLASS_NAME, 'link__page-next')
         #  페이지 넘기는 작업 수행
-        if next_btn is not None:
-            WebDriverWait(driver, 3).until(EC.presence_of_element_located(
-                (By.XPATH, '//*[@id="section__inner-content-body-container"]/div[3]/div/a[3]'))).send_keys(Keys.ENTER)
-            del soup
-            print(page)
-            time.sleep(3)
-        else:
+        if next_btn is None:
             print("마지막 페이지까지 완료")
+        else:
+            driver.find_element(By.CLASS_NAME, "link__page-next").send_keys(Keys.ENTER)
+            page += 1
+            print(str(page) + "페이지")
             time.sleep(3)
+
+
+#  크롤링 결과를 '검색어.csv' 파일로 저장
+def saveToFile(filename, list):
+    with open(filename, 'w', encoding='utf-8-sig', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows(list)
+    print(search_txt + '.csv 파일 저장 완료')
+
+
+saveToFile(search_txt + '.csv', pList)
+
+driver.quit()
