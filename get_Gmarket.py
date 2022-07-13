@@ -7,6 +7,7 @@ import pymysql
 import csv
 import time
 import re
+import math
 
 #  검색어 입력 및 결과 화면 출력
 search_txt = input('Gmarket 검색 키워드: ')
@@ -15,6 +16,7 @@ search_txt = input('Gmarket 검색 키워드: ')
 service = Service('C:/chrome/chromedriver.exe')
 driver = webdriver.Chrome(service=service)
 driver.get("https://browse.gmarket.co.kr/search?keyword=" + search_txt)
+driver.implicitly_wait(10)
 time.sleep(2)
 
 #  판매 인기순 정렬
@@ -31,9 +33,10 @@ print("*" + search_txt + "*" + " 전체 상품 수: " + str(total_item))
 item_count = 1
 page = 1
 pList = []
+total_page = math.ceil(total_item/100)
 
 #  전체 페이지 순회
-while item_count <= total_item:
+while page <= total_page:
     #  BS4 사용 전 초기화
     soup = BeautifulSoup(driver.page_source, 'html.parser')
     #  상품 리스트 파싱
@@ -67,7 +70,7 @@ while item_count <= total_item:
             item_count += 1
         print()
 
-    if item_count > total_item:
+    if page == total_page:
         print('크롤링 완료')
         break
     else:
