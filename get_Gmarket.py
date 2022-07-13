@@ -9,6 +9,9 @@ import time
 import re
 import math
 
+
+
+
 #  검색어 입력 및 결과 화면 출력
 search_txt = input('Gmarket 검색 키워드: ')
 
@@ -54,19 +57,15 @@ while page <= total_page:
                 'div.box__information-major > div.box__item-price > div.box__price-seller > strong').text
             price = re.sub(r"^\s+|\s+$", "", price)
 
-            # div.box__information-major > div.box__item-title > span > a > span.box__brand > span.text__brand
+            #  상품 상세 페이지 접근
+            driver.find_element(By.CLASS_NAME, 'link__item').click()
+            driver.switch_to.window(driver.window_handles[-1])
+            time.sleep(2)
 
-            #  상품 브랜드, 브랜드가 적혀있지 않을 경우에는 판매자 정보
-            brand = getattr(i.select_one('span.box__brand > span.text__brand'), 'text', None)
-            if brand is None:
-                brand = getattr(i.select_one('div.box__information_seller > a > span.text__seller'), 'text', None)
-            if brand is None:
-                brand = "지마켓"
-            brand = re.sub(r"^\s+|\s+$", "", brand)
+            #  브랜드 정보 수집
+            driver.find_element(By.CLASS_NAME, 'button__detail-more js-toggle-button').click()
+            brand = i.select_one('#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > td').text
 
-            print(item_count)
-            pList.append([name, price, brand])
-            print("상품명: " + name + "/ 가격: " + price + "/ 브랜드(판매자): " + brand)
             item_count += 1
         print()
 
