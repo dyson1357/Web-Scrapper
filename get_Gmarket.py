@@ -9,15 +9,15 @@ import time
 import re
 import math
 
-
-
+options = webdriver.ChromeOptions()
+options.add_argument("headless")
 
 #  검색어 입력 및 결과 화면 출력
 search_txt = input('Gmarket 검색 키워드: ')
 
 #  chromedriver 설정, 4.0부터는 아래와 같이 써야 함
 service = Service('C:/chrome/chromedriver.exe')
-driver = webdriver.Chrome(service=service)
+driver = webdriver.Chrome(service=service, options=options)
 driver.get("https://browse.gmarket.co.kr/search?keyword=" + search_txt)
 driver.implicitly_wait(10)
 time.sleep(2)
@@ -63,8 +63,20 @@ while page <= total_page:
             time.sleep(2)
 
             #  브랜드 정보 수집
-            driver.find_element(By.CLASS_NAME, 'button__detail-more js-toggle-button').click()
-            brand = i.select_one('#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > td').text
+            driver.find_element(By.CSS_SELECTOR, '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content > div.box__product-notice-more > button').send_keys(Keys.ENTER)
+            brand = getattr(driver.find_element(By.CSS_SELECTOR, '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > td'),
+                            'text', None)
+            if brand is None:
+                brand = "정보 없음"
+            brand = re.sub(r"^\s+|\s+$", "", brand)
+
+            driver.close()
+            driver.switch_to.window(driver.window_handles[0])
+
+            pList.append([name, price, brand])
+            print(item_count)
+            pList.append([name, price, brand])
+            print("상품명: " + name + " / 가격: " + price + " / 브랜드(판매자): " + brand)
 
             item_count += 1
         print()
