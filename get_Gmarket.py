@@ -64,8 +64,11 @@ while page <= total_page:
 
             #  브랜드 정보 수집
             driver.find_element(By.CSS_SELECTOR, '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content > div.box__product-notice-more > button').send_keys(Keys.ENTER)
-            brand = getattr(driver.find_element(By.CSS_SELECTOR, '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > td'),
+            brand = getattr(soup.select(
+                                                '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > td'),
                             'text', None)
+            '''brand = getattr(driver.find_element(By.CSS_SELECTOR, '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > td'),
+                            'text', None)'''
             if brand is None:
                 brand = "정보 없음"
             brand = re.sub(r"^\s+|\s+$", "", brand)
