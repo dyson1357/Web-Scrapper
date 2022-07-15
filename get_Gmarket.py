@@ -17,7 +17,7 @@ search_txt = input('Gmarket 검색 키워드: ')
 
 #  chromedriver 설정, 4.0부터는 아래와 같이 써야 함
 service = Service('C:/chrome/chromedriver.exe')
-driver = webdriver.Chrome(service=service, options=options)
+driver = webdriver.Chrome(service=service)
 driver.get("https://browse.gmarket.co.kr/search?keyword=" + search_txt)
 driver.implicitly_wait(10)
 time.sleep(2)
@@ -58,15 +58,17 @@ while page <= total_page:
             price = re.sub(r"^\s+|\s+$", "", price)
 
             #  상품 상세 페이지 접근
-            detail_page_xpath = '//*[@id="section__inner-content-body-container"]/div[2]/div[' + str() + ']/div[1]/div[2]/div[1]/div[2]/span/a'
-            driver.find_element(By.XPATH, detail_page_xpath).send_keys(Keys.ENTER)
+            driver.find_element(By.CLASS_NAME, 'link__item').click()
             driver.switch_to.window(driver.window_handles[-1])
             time.sleep(2)
 
             #  브랜드 정보 수집
             driver.find_element(By.CSS_SELECTOR, '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content > div.box__product-notice-more > button').send_keys(Keys.ENTER)
-            brand = getattr(driver.find_element(By.CSS_SELECTOR, '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > td'),
+            brand = getattr(soup.select(
+                                                '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > td'),
                             'text', None)
+            '''brand = getattr(driver.find_element(By.CSS_SELECTOR, '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > td'),
+                            'text', None)'''
             if brand is None:
                 brand = "정보 없음"
             brand = re.sub(r"^\s+|\s+$", "", brand)
@@ -74,11 +76,11 @@ while page <= total_page:
             driver.close()
             driver.switch_to.window(driver.window_handles[0])
 
+            pList.append([name, price, brand])
             print(item_count)
             pList.append([name, price, brand])
             print("상품명: " + name + " / 가격: " + price + " / 브랜드(판매자): " + brand)
 
-            brand = None
             item_count += 1
         print()
 
@@ -93,7 +95,6 @@ while page <= total_page:
         else:
             driver.find_element(By.CLASS_NAME, "link__page-next").send_keys(Keys.ENTER)
             page += 1
-            del soup
             print(str(page) + "페이지")
             time.sleep(3)
 
