@@ -40,6 +40,7 @@ pList = []
 link_list = []
 total_page = math.ceil(total_item/100)
 num = 1
+print(total_page)
 
 #  전체 페이지 순회
 while page <= total_page:
@@ -50,31 +51,39 @@ while page <= total_page:
     links = driver.find_elements(By.CLASS_NAME, 'link__item')
     for i in links:
         print(num)
+        time.sleep(0.5)
         num += 1
         link_list.append(i.get_attribute('href'))
+        link_list = list(dict.fromkeys(link_list))
         print(link_list)
 
-    if page == total_page:
-        print('크롤링 완료')
-        break
-
-    if (item_count % 100) == 0:
-        #  다음 페이지로 전환 동작
         if page == total_page:
             print('크롤링 완료')
             break
-        else:
-            next_btn = driver.find_element(By.CLASS_NAME, 'link__page-next')
-            #  페이지 넘기는 작업 수행
-            if next_btn is None:
-                print("마지막 페이지까지 완료")
-            else:
-                driver.find_element(By.CLASS_NAME, "link__page-next").send_keys(Keys.ENTER)
-                page += 1
-                print(str(page) + "페이지")
-                time.sleep(3)
 
-    item_count += 1
+        if (item_count % 200) == 0:
+            #  다음 페이지로 전환 동작
+            if page == total_page:
+                print('크롤링 완료')
+                break
+            else:
+                next_btn = driver.find_element(By.CLASS_NAME, 'link__page-next')
+                #  페이지 넘기는 작업 수행
+                if next_btn is None:
+                    print("마지막 페이지까지 완료")
+                else:
+                    driver.find_element(By.CLASS_NAME, "link__page-next").send_keys(Keys.ENTER)
+                    page += 1
+                    print(str(page) + "페이지")
+                    time.sleep(3)
+
+        item_count += 1
+
+
+
+
+
+
 
 
     '''#  상품 정보 수집
