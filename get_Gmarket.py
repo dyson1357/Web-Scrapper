@@ -14,10 +14,11 @@ options.add_argument("headless")
 
 #  검색어 입력 및 결과 화면 출력
 search_txt = input('Gmarket 검색 키워드: ')
+num_of_req = input('가져올 상품 데이터 수: ')
 
 #  chromedriver 설정, 4.0부터는 아래와 같이 써야 함
 service = Service('C:/chrome/chromedriver.exe')
-driver = webdriver.Chrome(service=service)
+driver = webdriver.Chrome(service=service, options=options)
 driver.get("https://browse.gmarket.co.kr/search?keyword=" + search_txt)
 driver.implicitly_wait(10)
 time.sleep(2)
@@ -36,68 +37,87 @@ print("*" + search_txt + "*" + " 전체 상품 수: " + str(total_item))
 item_count = 1
 page = 1
 pList = []
-total_page = math.ceil(total_item/100)
+link_list = []
+total_page = math.ceil(total_item / 100)
+num = 1
+print(total_page)
 
 #  전체 페이지 순회
-while page <= total_page:
-    #  BS4 사용 전 초기화
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
-    #  상품 리스트 파싱
-    product_list = soup.select('div.section__module-wrap > div')
+while True:
+    links = []
+    #  상품 상세 페이지 링크 수집
+    links = driver.find_elements(By.CLASS_NAME, 'link__item')
 
-    #  현재 페이지에 노출된 상품들의 제품명, 가격, 이미지 링크를 인기 상품 순서로 출력
-    for i in product_list:
-        if i.find('div', class_='box__information'):
-            #  상품명
-            name = i.select_one('span.text__item').text
-            name = re.sub(r"^\s+|\s+$", "", name)
+    for i in links:
+        print(num)
+        num += 1
+        link_list.append(i.get_attribute('href'))
+        link_list = list(dict.fromkeys(link_list))
+        print(link_list)
 
-            #  가격(현재 판매 중인 가격)
-            price = i.select_one(
-                'div.box__information-major > div.box__item-price > div.box__price-seller > strong').text
-            price = re.sub(r"^\s+|\s+$", "", price)
+        item_count += 1
 
-            #  상품 상세 페이지 접근
-            driver.find_element(By.CLASS_NAME, 'link__item').click()
-            driver.switch_to.window(driver.window_handles[-1])
-            time.sleep(2)
+        if item_count == total_item * 2:
+            print('크롤링 완료')
+            break
 
-            #  브랜드 정보 수집
-            driver.find_element(By.CSS_SELECTOR, '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content > div.box__product-notice-more > button').send_keys(Keys.ENTER)
-            brand = getattr(soup.select(
-                                                '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > td'),
-                            'text', None)
-            '''brand = getattr(driver.find_element(By.CSS_SELECTOR, '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > td'),
-                            'text', None)'''
-            if brand is None:
-                brand = "정보 없음"
-            brand = re.sub(r"^\s+|\s+$", "", brand)
-
-            driver.close()
-            driver.switch_to.window(driver.window_handles[0])
-
-            pList.append([name, price, brand])
-            print(item_count)
-            pList.append([name, price, brand])
-            print("상품명: " + name + " / 가격: " + price + " / 브랜드(판매자): " + brand)
-
-            item_count += 1
-        print()
-
-    if page == total_page:
+        if (item_count % 200) == 0:
+            next_btn = driver.find_element(By.CLASS_NAME, 'link__page-next')
+            #  페이지 넘기는 작업 수행
+            if next_btn is None:
+                print("마지막 페이지까지 완료")
+            else:
+                page += 1
+                target = driver.find_element(By.CLASS_NAME, "link__page-next")
+                target.send_keys(Keys.CONTROL + "\n")
+                driver.close()
+                # 새로운 탭으로 초점을 전환
+                driver.switch_to.window(driver.window_handles[-1])
+                driver.implicitly_wait(10)
+                print(str(page) + "페이지")
+                break
+    if item_count == total_item * 2:
         print('크롤링 완료')
         break
+
+prod_count = 1
+
+soup = BeautifulSoup(driver.page_source, 'html.parser')
+for product in link_list:
+
+    driver.get(product)
+    driver.implicitly_wait(10)
+
+    #  상품명
+    name = driver.find_element(By.CLASS_NAME, 'itemtit').text
+    name = re.sub(r"^\s+|\s+$", "", name)
+
+    #  가격(현재 판매 중인 가격)
+    price = driver.find_element(By.CLASS_NAME, 'price_real').text
+    price = re.sub(r"^\s+|\s+$", "", price)
+
+    #  브랜드 정보 수집
+    driver.find_element(By.CSS_SELECTOR,
+                        '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content > div.box__product-notice-more > button').send_keys(
+        Keys.ENTER)
+    brand_search = driver.find_element(By.CSS_SELECTOR,
+                                        '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > th').text
+
+    if brand_search == "브랜드":
+        brand = getattr(driver.find_element(By.CSS_SELECTOR,
+                                        '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > td'),
+                    'text', None)
     else:
-        next_btn = driver.find_element(By.CLASS_NAME, 'link__page-next')
-        #  페이지 넘기는 작업 수행
-        if next_btn is None:
-            print("마지막 페이지까지 완료")
-        else:
-            driver.find_element(By.CLASS_NAME, "link__page-next").send_keys(Keys.ENTER)
-            page += 1
-            print(str(page) + "페이지")
-            del soup
-            time.sleep(3)
+        brand = "정보 없음"
+
+    if brand == "상세설명 참조":
+        brand = "정보 없음"
+    brand = re.sub(r"^\s+|\s+$", "", brand)
+
+    pList.append([name, price, brand])
+    print(prod_count)
+    prod_count += 1
+    print("상품명: " + name + " / 가격: " + price + " / 브랜드(판매자): " + brand)
 
 
 #  크롤링 결과를 '검색어.csv' 파일로 저장
@@ -108,6 +128,7 @@ def saveToFile(filename, list):
     print(search_txt + '.csv 파일 저장 완료')
 
 
+#  pList = set(map(tuple, pList))
 saveToFile(search_txt + '.csv', pList)
 
 driver.quit()

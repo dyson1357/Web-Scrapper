@@ -14,10 +14,11 @@ options.add_argument("headless")
 
 #  검색어 입력 및 결과 화면 출력
 search_txt = input('Gmarket 검색 키워드: ')
+num_of_req = input('가져올 상품 데이터 수: ')
 
 #  chromedriver 설정, 4.0부터는 아래와 같이 써야 함
 service = Service('C:/chrome/chromedriver.exe')
-driver = webdriver.Chrome(service=service)
+driver = webdriver.Chrome(service=service, options=options)
 driver.get("https://browse.gmarket.co.kr/search?keyword=" + search_txt)
 driver.implicitly_wait(10)
 time.sleep(2)
@@ -41,13 +42,12 @@ total_page = math.ceil(total_item / 100)
 num = 1
 print(total_page)
 
-
 #  전체 페이지 순회
 while True:
-
     links = []
     #  상품 상세 페이지 링크 수집
     links = driver.find_elements(By.CLASS_NAME, 'link__item')
+
     for i in links:
         print(num)
         num += 1
@@ -68,51 +68,56 @@ while True:
                 print("마지막 페이지까지 완료")
             else:
                 page += 1
-                #  driver.get("https://browse.gmarket.co.kr/search?keyword=" + search_txt + "&p=" + str(page))
-                #  https://browse.gmarket.co.kr/search?keyword=cpu&p=2
                 target = driver.find_element(By.CLASS_NAME, "link__page-next")
                 target.send_keys(Keys.CONTROL + "\n")
                 driver.close()
                 # 새로운 탭으로 초점을 전환
                 driver.switch_to.window(driver.window_handles[-1])
                 driver.implicitly_wait(10)
-                time.sleep(2)
                 print(str(page) + "페이지")
                 break
     if item_count == total_item * 2:
         print('크롤링 완료')
         break
 
-    '''#  상품 정보 수집
-    for item in link_list:
-        driver.get(item)
-        time.sleep(2)
+prod_count = 1
 
-        #  상품명
-        name = driver.find_element(By.CLASS_NAME, 'itemtit').text
-        name = re.sub(r"^\s+|\s+$", "", name)
+soup = BeautifulSoup(driver.page_source, 'html.parser')
+for product in link_list:
 
-        #  가격(현재 판매 중인 가격)
-        price = driver.find_element(By.CLASS_NAME, 'price_real').text
-        price = re.sub(r"^\s+|\s+$", "", price)
+    driver.get(product)
+    driver.implicitly_wait(10)
 
-        #  브랜드 정보 수집
-        driver.find_element(By.CSS_SELECTOR,
-                            '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content > '
-                            'div.box__product-notice-more > button').send_keys(Keys.ENTER)
-        brand = getattr(soup.select( '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > '
-                                     'div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > td'),'text', None)
-        if brand is None:
-            brand = "정보 없음"
-        brand = re.sub(r"^\s+|\s+$", "", brand)
+    #  상품명
+    name = driver.find_element(By.CLASS_NAME, 'itemtit').text
+    name = re.sub(r"^\s+|\s+$", "", name)
 
-        pList.append([name, price, brand])
-        print(item_count)
-        pList.append([name, price, brand])
-        print("상품명: " + name + " / 가격: " + price + " / 브랜드(판매자): " + brand)
+    #  가격(현재 판매 중인 가격)
+    price = driver.find_element(By.CLASS_NAME, 'price_real').text
+    price = re.sub(r"^\s+|\s+$", "", price)
 
-        item_count += 1
-        print()'''
+    #  브랜드 정보 수집
+    driver.find_element(By.CSS_SELECTOR,
+                        '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content > div.box__product-notice-more > button').send_keys(
+        Keys.ENTER)
+    brand_search = driver.find_element(By.CSS_SELECTOR,
+                                        '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > th').text
+
+    if brand_search == "브랜드":
+        brand = getattr(driver.find_element(By.CSS_SELECTOR,
+                                        '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > td'),
+                    'text', None)
+    else:
+        brand = "정보 없음"
+
+    if brand == "상세설명 참조":
+        brand = "정보 없음"
+    brand = re.sub(r"^\s+|\s+$", "", brand)
+
+    pList.append([name, price, brand])
+    print(prod_count)
+    prod_count += 1
+    print("상품명: " + name + " / 가격: " + price + " / 브랜드(판매자): " + brand)
 
 
 #  크롤링 결과를 '검색어.csv' 파일로 저장
@@ -123,6 +128,7 @@ def saveToFile(filename, list):
     print(search_txt + '.csv 파일 저장 완료')
 
 
-saveToFile(search_txt + '.csv', link_list)
+#  pList = set(map(tuple, pList))
+saveToFile(search_txt + '.csv', pList)
 
 driver.quit()
