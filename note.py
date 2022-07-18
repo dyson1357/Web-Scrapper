@@ -17,11 +17,10 @@ search_txt = input('Gmarket 검색 키워드: ')
 
 #  chromedriver 설정, 4.0부터는 아래와 같이 써야 함
 service = Service('C:/chrome/chromedriver.exe')
-driver = webdriver.Chrome(service=service, options=options)
+driver = webdriver.Chrome(service=service)
 driver.get("https://browse.gmarket.co.kr/search?keyword=" + search_txt)
 driver.implicitly_wait(10)
 time.sleep(2)
-
 
 #  판매 인기순 정렬
 driver.find_element(By.XPATH,
@@ -38,53 +37,51 @@ item_count = 1
 page = 1
 pList = []
 link_list = []
-total_page = math.ceil(total_item/100)
+total_page = math.ceil(total_item / 100)
 num = 1
 print(total_page)
 
-#  전체 페이지 순회
-while page <= total_page:
-    #  BS4 사용 전 초기화
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
 
+#  전체 페이지 순회
+while True:
+
+    links = []
     #  상품 상세 페이지 링크 수집
     links = driver.find_elements(By.CLASS_NAME, 'link__item')
     for i in links:
         print(num)
-        time.sleep(0.5)
         num += 1
         link_list.append(i.get_attribute('href'))
         link_list = list(dict.fromkeys(link_list))
         print(link_list)
 
-        if page == total_page:
+        item_count += 1
+
+        if item_count == total_item * 2:
             print('크롤링 완료')
             break
 
         if (item_count % 200) == 0:
-            #  다음 페이지로 전환 동작
-            if page == total_page:
-                print('크롤링 완료')
-                break
+            next_btn = driver.find_element(By.CLASS_NAME, 'link__page-next')
+            #  페이지 넘기는 작업 수행
+            if next_btn is None:
+                print("마지막 페이지까지 완료")
             else:
-                next_btn = driver.find_element(By.CLASS_NAME, 'link__page-next')
-                #  페이지 넘기는 작업 수행
-                if next_btn is None:
-                    print("마지막 페이지까지 완료")
-                else:
-                    driver.find_element(By.CLASS_NAME, "link__page-next").send_keys(Keys.ENTER)
-                    page += 1
-                    print(str(page) + "페이지")
-                    time.sleep(3)
-
-        item_count += 1
-
-
-
-
-
-
-
+                page += 1
+                #  driver.get("https://browse.gmarket.co.kr/search?keyword=" + search_txt + "&p=" + str(page))
+                #  https://browse.gmarket.co.kr/search?keyword=cpu&p=2
+                target = driver.find_element(By.CLASS_NAME, "link__page-next")
+                target.send_keys(Keys.CONTROL + "\n")
+                driver.close()
+                # 새로운 탭으로 초점을 전환
+                driver.switch_to.window(driver.window_handles[-1])
+                driver.implicitly_wait(10)
+                time.sleep(2)
+                print(str(page) + "페이지")
+                break
+    if item_count == total_item * 2:
+        print('크롤링 완료')
+        break
 
     '''#  상품 정보 수집
     for item in link_list:
@@ -117,6 +114,7 @@ while page <= total_page:
         item_count += 1
         print()'''
 
+
 #  크롤링 결과를 '검색어.csv' 파일로 저장
 def saveToFile(filename, list):
     with open(filename, 'w', encoding='utf-8-sig', newline='') as f:
@@ -125,7 +123,6 @@ def saveToFile(filename, list):
     print(search_txt + '.csv 파일 저장 완료')
 
 
-saveToFile(search_txt + '.csv', pList)
+saveToFile(search_txt + '.csv', link_list)
 
 driver.quit()
-

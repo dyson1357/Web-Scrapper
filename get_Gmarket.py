@@ -96,6 +96,7 @@ while page <= total_page:
             driver.find_element(By.CLASS_NAME, "link__page-next").send_keys(Keys.ENTER)
             page += 1
             print(str(page) + "페이지")
+            del soup
             time.sleep(3)
 
 
