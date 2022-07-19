@@ -2,26 +2,27 @@ from selenium import webdriver
 from selenium.webdriver import Keys
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from bs4 import BeautifulSoup
-import pymysql
+from datetime import timedelta
 import csv
 import time
 import re
 import math
+
 
 options = webdriver.ChromeOptions()
 options.add_argument("headless")
 
 #  검색어 입력 및 결과 화면 출력
 search_txt = input('Gmarket 검색 키워드: ')
-num_of_req = input('가져올 상품 데이터 수: ')
+num_of_req = int(input('가져올 상품 데이터 수: '))
+
+start = time.time()
 
 #  chromedriver 설정, 4.0부터는 아래와 같이 써야 함
 service = Service('C:/chrome/chromedriver.exe')
 driver = webdriver.Chrome(service=service, options=options)
 driver.get("https://browse.gmarket.co.kr/search?keyword=" + search_txt)
 driver.implicitly_wait(10)
-time.sleep(2)
 
 #  판매 인기순 정렬
 driver.find_element(By.XPATH,
@@ -32,7 +33,6 @@ driver.find_element(By.XPATH,
 #  전체 상품 수
 total_item = driver.find_element(By.CLASS_NAME, 'text__item-count').text
 total_item = int(re.sub(r'\D', '', total_item))
-print("*" + search_txt + "*" + " 전체 상품 수: " + str(total_item))
 
 item_count = 1
 page = 1
@@ -40,25 +40,21 @@ pList = []
 link_list = []
 total_page = math.ceil(total_item / 100)
 num = 1
-print(total_page)
 
 #  전체 페이지 순회
-while True:
+while item_count <= num_of_req * 2:
     links = []
     #  상품 상세 페이지 링크 수집
     links = driver.find_elements(By.CLASS_NAME, 'link__item')
 
     for i in links:
-        print(num)
         num += 1
         link_list.append(i.get_attribute('href'))
         link_list = list(dict.fromkeys(link_list))
-        print(link_list)
 
         item_count += 1
 
-        if item_count == total_item * 2:
-            print('크롤링 완료')
+        if item_count == num_of_req * 2:
             break
 
         if (item_count % 200) == 0:
@@ -74,15 +70,13 @@ while True:
                 # 새로운 탭으로 초점을 전환
                 driver.switch_to.window(driver.window_handles[-1])
                 driver.implicitly_wait(10)
-                print(str(page) + "페이지")
                 break
-    if item_count == total_item * 2:
-        print('크롤링 완료')
+    if item_count == num_of_req * 2:
         break
 
 prod_count = 1
+print(len(link_list))
 
-soup = BeautifulSoup(driver.page_source, 'html.parser')
 for product in link_list:
 
     driver.get(product)
@@ -100,8 +94,9 @@ for product in link_list:
     driver.find_element(By.CSS_SELECTOR,
                         '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content > div.box__product-notice-more > button').send_keys(
         Keys.ENTER)
-    brand_search = driver.find_element(By.CSS_SELECTOR,
-                                        '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > th').text
+    brand_search = getattr(driver.find_element(By.CSS_SELECTOR,
+                                        '#vip-tab_detail > div.vip-detailarea_productinfo.box__product-notice.js-toggle-content.on > div.box__product-notice-list > table:nth-child(1) > tbody > tr:nth-child(7) > th'),
+                    'text', None)
 
     if brand_search == "브랜드":
         brand = getattr(driver.find_element(By.CSS_SELECTOR,
@@ -115,9 +110,8 @@ for product in link_list:
     brand = re.sub(r"^\s+|\s+$", "", brand)
 
     pList.append([name, price, brand])
-    print(prod_count)
+    print(str(prod_count) + " | 상품명: " + name + " / 가격: " + price + " / 브랜드: " + brand)
     prod_count += 1
-    print("상품명: " + name + " / 가격: " + price + " / 브랜드(판매자): " + brand)
 
 
 #  크롤링 결과를 '검색어.csv' 파일로 저장
@@ -132,3 +126,7 @@ def saveToFile(filename, list):
 saveToFile(search_txt + '.csv', pList)
 
 driver.quit()
+
+end = time.time()
+
+print("총 소요 시간(hh:mm:ss): ", timedelta(seconds=end-start))
