@@ -64,11 +64,7 @@ while item_count <= num_of_req * 2:
                 print("마지막 페이지까지 완료")
             else:
                 page += 1
-                target = driver.find_element(By.CLASS_NAME, "link__page-next")
-                target.send_keys(Keys.CONTROL + "\n")
-                driver.close()
-                # 새로운 탭으로 초점을 전환
-                driver.switch_to.window(driver.window_handles[-1])
+                driver.find_element(By.CLASS_NAME, "link__page-next").send_keys(Keys.ENTER)
                 driver.implicitly_wait(10)
                 break
     if item_count == num_of_req * 2:
