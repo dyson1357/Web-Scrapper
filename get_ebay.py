@@ -3,11 +3,14 @@ from selenium import webdriver
 from selenium.common import NoSuchElementException
 from selenium.webdriver import Keys
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from datetime import timedelta
 import csv
 import time
 import re
+
+from selenium.webdriver.support.wait import WebDriverWait
 
 options = webdriver.ChromeOptions()
 options.add_argument("headless")
@@ -83,16 +86,21 @@ for product in link_list:
     price = driver.find_element(By.CLASS_NAME, 'notranslate').text
     price = re.sub(r"^\s+|\s+$", "", price)
 
-    #  브랜드
-    check_brand = getattr(driver.find_element(By.CLASS_NAME, 'ux-labels-values__labels-content'), 'text', None)
-    if check_brand is None:
-        brand = "정보 없음"
-    if check_brand == "Brand:":
-        brand = getattr(driver.find_element(By.XPATH, '//*[@id="viTabs_0_is"]/div/div[2]/div/div[2]/div[4]/div'), 'text', None)
-        if brand is None:
+    try:
+        find = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="viTabs_0_is"]/div/div[2]/div/div[2]/div[3]/div')))
+        check_brand = getattr(find, 'text', None)
+        if check_brand is None:
             brand = "정보 없음"
-    else:
+        if check_brand == "Brand:":
+            brand = getattr(driver.find_element(By.XPATH, '//*[@id="viTabs_0_is"]/div/div[2]/div/div[2]/div[4]/div'),
+                            'text', None)
+            if brand is None:
+                brand = "정보 없음"
+        else:
+            brand = "정보 없음"
+    except Exception as e:
         brand = "정보 없음"
+
     driver.implicitly_wait(10)
     brand = re.sub(r"^\s+|\s+$", "", brand)
 
