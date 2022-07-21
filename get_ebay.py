@@ -28,7 +28,7 @@ driver = webdriver.Chrome(service=service, options=options)
 
 #  즉시 구매 옵션과 새 상품인 옵션을 만족하는 검색 결과창
 driver.get(
-    "https://www.ebay.com/sch/i.html?_nkw=" + search_txt + "&_sacat=0&LH_BIN=1&rt=nc&LH_ItemCondition=1000&_ipg=120")
+    "https://www.ebay.com/sch/i.html?_nkw=" + search_txt + "&_sacat=0&LH_BIN=1&rt=nc&LH_ItemCondition=1000&_ipg=240")
 driver.implicitly_wait(10)
 
 item_count = 1
@@ -52,7 +52,7 @@ while len(link_list) <= num_of_req + 1:
         if len(link_list) == num_of_req + 1:
             break
 
-        if (item_count % 120) == 0:
+        if (item_count % 240) == 0:
             next_btn = driver.find_element(By.CLASS_NAME, 'pagination__next.icon-link')
             #  페이지 넘기는 작업 수행
             if next_btn is None:
@@ -69,9 +69,6 @@ del link_list[0]
 prod_count = 1
 print(len(link_list))
 
-'''
-이 밑은 뜯어 고치는 중
-'''
 soup = BeautifulSoup(driver.page_source, 'html.parser')
 for product in link_list:
     driver.get(product)
@@ -79,16 +76,22 @@ for product in link_list:
     driver.implicitly_wait(30)
 
     #  상품명
-    name = driver.find_element(By.ID, 'vi-lkhdr-itmTitl').get_attribute('textContent')
-    name = re.sub(r"^\s+|\s+$", "", name)
+    try:
+        name = driver.find_element(By.ID, 'vi-lkhdr-itmTitl').get_attribute('textContent')
+        name = re.sub(r"^\s+|\s+$", "", name)
+    except Exception as e:
+        name = "로딩 불가"
 
     #  가격(현재 판매 중인 가격)
-    price = driver.find_element(By.CLASS_NAME, 'notranslate').text
-    price = re.sub(r"^\s+|\s+$", "", price)
+    try:
+        price = driver.find_element(By.CLASS_NAME, 'notranslate').text
+        price = re.sub(r"^\s+|\s+$", "", price)
+    except Exception as e:
+        name = "로딩 불가"
 
     try:
-        find = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="viTabs_0_is"]/div/div[2]/div/div[2]/div[3]/div')))
-        check_brand = getattr(find, 'text', None)
+        brand_place = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="viTabs_0_is"]/div/div[2]/div/div[2]/div[3]/div')))
+        check_brand = getattr(brand_place, 'text', None)
         if check_brand is None:
             brand = "정보 없음"
         if check_brand == "Brand:":
