@@ -19,8 +19,10 @@ options.add_argument("headless")
 search_txt = input('ebay 검색 키워드: ')
 num_of_req = int(input('가져올 상품 데이터 수: '))
 
+
 #  시작 시간
 start = time.time()
+
 
 #  chromedriver 설정, 4.0부터는 아래와 같이 써야 함
 service = Service('C:/chrome/chromedriver.exe')
